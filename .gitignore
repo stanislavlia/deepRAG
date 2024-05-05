@@ -1,4 +1,5 @@
 myvenv
+assets/*
 *.pdf
 .env
 chromadb_data/*
