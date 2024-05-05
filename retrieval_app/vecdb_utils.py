@@ -7,7 +7,7 @@ from uuid import uuid1
 
 
 
-DBPATH = "./chromadb_data"
+DBPATH = "/home/sliashko/Desktop/ft_search/retrieval_app/chromadb_data"
 
 
 def conntect_to_db():

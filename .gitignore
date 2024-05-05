@@ -1,4 +1,5 @@
 myvenv
+retrieval_app/chromadb_data/*
 assets/*
 *.pdf
 .env
