@@ -43,7 +43,7 @@ class RetrieverBase():
 	def load_docs_to_collection(self, collection_name, docs, metadatas=None):
 		
 		if collection_name not in  self.collections:
-			raise InvalidCollectionException
+			raise InvalidCollectionException(f"Invalid collection name: {collection_name}")
 		
 		collection = self.collections[collection_name]
 		generated_ids = [str(uuid1()) for _ in range(len(docs))]
@@ -55,7 +55,7 @@ class RetrieverBase():
 	def query_collection(self, collection_name, query, n_results=5):
 
 		if collection_name not in  self.collections:
-			raise InvalidCollectionException
+			raise InvalidCollectionException(f"Invalid collection name: {collection_name}")
 		
 		collection = self.collections[collection_name]
 		return collection.query(query_texts=query, n_results=n_results)
@@ -63,7 +63,7 @@ class RetrieverBase():
 	def delete_collection(self, collection_name):
 
 		if collection_name not in  self.collections:
-			raise InvalidCollectionException
+			raise InvalidCollectionException(f"Invalid collection name: {collection_name}")
 		
 		collection = self.collections[collection_name]
 		collection.delete()
