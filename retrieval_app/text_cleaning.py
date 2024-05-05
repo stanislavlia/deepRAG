@@ -25,8 +25,6 @@ def remove_punctuation(text):
     return ''.join([c for c in text if c not in string.punctuation])
 
 
-
-
 def clean_text(text):
 
     lowered_text = text.lower()
@@ -35,7 +33,6 @@ def clean_text(text):
     removed_spec_chars_text = remove_special_characters(removed_urls_text)
     cleaned_text = remove_numbers(removed_spec_chars_text)
 
-    
 
     return cleaned_text
     
