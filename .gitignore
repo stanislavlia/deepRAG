@@ -1,4 +1,4 @@
 myvenv
 *.pdf
 .env
-chromadb_data
+chromadb_data/*

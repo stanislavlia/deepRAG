@@ -1,5 +1,6 @@
 import chromadb
 from chromadb import Documents, EmbeddingFunction, Embeddings
+from chromadb.errors import InvalidCollectionException
 import json
 
 from uuid import uuid1
@@ -42,7 +43,7 @@ class RetrieverBase():
 	def load_docs_to_collection(self, collection_name, docs, metadatas=None):
 		
 		if collection_name not in  self.collections:
-			raise FileExistsError
+			raise InvalidCollectionException
 		
 		collection = self.collections[collection_name]
 		generated_ids = [str(uuid1()) for _ in range(len(docs))]
@@ -50,11 +51,11 @@ class RetrieverBase():
 		collection.add(ids=generated_ids, 
 				       documents=docs,
 					  metadatas=metadatas)
-		
+	
 	def query_collection(self, collection_name, query, n_results=5):
 
 		if collection_name not in  self.collections:
-			raise FileExistsError
+			raise InvalidCollectionException
 		
 		collection = self.collections[collection_name]
 		return collection.query(query_texts=query, n_results=n_results)
@@ -62,7 +63,7 @@ class RetrieverBase():
 	def delete_collection(self, collection_name):
 
 		if collection_name not in  self.collections:
-			raise FileExistsError
+			raise InvalidCollectionException
 		
 		collection = self.collections[collection_name]
 		collection.delete()
