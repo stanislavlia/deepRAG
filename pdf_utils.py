@@ -28,10 +28,3 @@ def read_pdfdir_generator(dir_path):
 
 		yield (pages, metadata)
 
-
-red_gen = read_pdfdir_generator("./books")
-
-for (pages, metadata) in red_gen:
-	print(metadata)
-
-
