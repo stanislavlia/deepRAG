@@ -1,13 +1,5 @@
 from PyPDF2 import PdfReader
-
-def extract_information(pdf_path):
-    with open(pdf_path, 'rb') as f:
-        pdf = PdfReader(f)
-        print(pdf.pages[5].extract_text())
-        metada = pdf.metadata
-
-    print(metada)
-    return metada
+import os
 
 
 def read_pdf_pages(pdf_path):
@@ -24,9 +16,22 @@ def read_pdf_pages(pdf_path):
 			metadatas.append({"source" : pdf_path, "page" : (i + 1)})
 		
 		return pages, metadatas
+	
+
+def read_pdfdir_generator(dir_path):
+
+	pdfs_in_dir = [os.path.join(dir_path, filename) for filename in os.listdir(dir_path) 
+					if filename.endswith(".pdf")]
+	
+	for pdf_path in pdfs_in_dir:
+		pages, metadata = read_pdf_pages(pdf_path)
+
+		yield (pages, metadata)
 
 
-pages, metadatas = read_pdf_pages("Netpractice.pdf")
-        
-print(pages)
-print("\n\n", metadatas)
+red_gen = read_pdfdir_generator("./books")
+
+for (pages, metadata) in red_gen:
+	print(metadata)
+
+
