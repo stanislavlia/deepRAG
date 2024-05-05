@@ -1,6 +1,6 @@
 import chromadb
 from chromadb import Documents, EmbeddingFunction, Embeddings
-
+import json
 
 from uuid import uuid1
 
@@ -58,45 +58,33 @@ class RetrieverBase():
 		
 		collection = self.collections[collection_name]
 		return collection.query(query_texts=query, n_results=n_results)
-
-
-
-
-db_client = conntect_to_db()
-retriever = RetrieverBase(db_client)
-
-retriever.create_collection("test", embedding_func=DummyEmbeddingFunction())
-
-retriever.load_docs_to_collection("test", ["Hello World!",
-								    "Bye Bye",
-									  "How are you?"])
-
-
-print(retriever.query_collection("test", "Hello World!", n_results=2))
-
-
 	
-	
+	def delete_collection(self, collection_name):
 
-
-# emb_fun = DummyEmbeddingFunction()
-
-# #print(emb_fun(["Hello World", "Bye world!"]))
-
+		if collection_name not in  self.collections:
+			raise FileExistsError
 		
-# db = conntect_to_db()
-# db.reset()
+		collection = self.collections[collection_name]
+		collection.delete()
 
-# collection = db.get_or_create_collection("mycollection",
-# 										  embedding_function=DummyEmbeddingFunction(),
-# 										   metadata=None)
-
-# print(collection.add(documents=["Hello World!",
-# 								 "Bye Bye"],
-# 					 ids=["1", "2"]
-# 								))
+		self.collections.pop(collection_name)
 
 
-# print(collection.get())
+			
+if __name__ == "__main__":
 
-# print(collection.query(query_texts="Text", n_results=2, ))
+	db_client = conntect_to_db()
+
+	retriever = RetrieverBase(db_client)
+	retriever.create_collection("test", embedding_func=DummyEmbeddingFunction())
+
+
+	retriever.load_docs_to_collection("test", ["Hello World!",
+										"Bye Bye",
+										"How are you?",
+										"What is your name?"])
+	
+	print("\nQUERY RESULT:\n")
+	print(json.dumps(retriever.query_collection("test", 
+											 "What is your name?",
+											   n_results=3), indent=2))
