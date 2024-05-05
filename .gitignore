@@ -4,3 +4,4 @@ assets/*
 *.pdf
 .env
 chromadb_data/*
+learn-ai-bbc/*
