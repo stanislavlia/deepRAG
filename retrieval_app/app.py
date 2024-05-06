@@ -13,7 +13,7 @@ import chromadb
 #Settings
 DB_PORT=8000
 DB_HOST="localhost"
-TMP_DIR_PATH="/home/sliashko/Desktop/ft_search/retrieval_app/tmp"
+STORAGE_DIR_PATH="/home/sliashko/Desktop/ft_search/retrieval_app/docs"
 
 
 
@@ -28,8 +28,8 @@ embedding_func = DummyEmbeddingFunction()
 retrieval = RetrieverBase(db_client=db_client)
 
 #create tmp dir
-if not os.path.exists(TMP_DIR_PATH):
-	os.makedirs(TMP_DIR_PATH)
+if not os.path.exists(STORAGE_DIR_PATH):
+	os.makedirs(STORAGE_DIR_PATH)
 	
 
 
@@ -87,12 +87,12 @@ def upload_pdf_to_collection(collection_name, file : UploadFile = File(...)):
 	content = file.file.read()
 
 	#save to tempdir
-	with open(os.path.join(TMP_DIR_PATH, file.filename), "wb") as f:
+	with open(os.path.join(STORAGE_DIR_PATH, file.filename), "wb") as f:
 		f.write(content)
 	
 
 	#read pdf and load to db
-	pages, metadatas = read_pdf_pages(os.path.join(TMP_DIR_PATH, file.filename))
+	pages, metadatas = read_pdf_pages(os.path.join(STORAGE_DIR_PATH, file.filename))
 	retrieval.load_docs_to_collection(collection_name=collection_name,
 								    docs=pages,
 									metadatas=metadatas)
