@@ -5,3 +5,5 @@ assets/*
 .env
 chromadb_data/*
 learn-ai-bbc/*
+__pycache__/*
+retrieval_app/__pycache__/*
