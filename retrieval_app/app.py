@@ -21,6 +21,7 @@ db_client = chromadb.HttpClient(host=DB_HOST,
 embedding_func = DummyEmbeddingFunction()
 
 #init retrieval
+#TODO: make collection dict inside persistent (mb read from db for init)
 retrieval = RetrieverBase(db_client=db_client)
 
 
@@ -52,7 +53,8 @@ def create_collection(create_query : CreateCollectionSchema):
 @app.post("/collections/add/{collection_name}")
 def add_docs_to_collection(collection_name, add_request : AddDocstoCollectionSchema):
 	
-	retrieval.load_docs_to_collection(docs=add_request.docs,
+	retrieval.load_docs_to_collection(collection_name=collection_name,
+								   	  docs=add_request.docs,
 								      metadatas=add_request.metadatas)
 	
 	return {"message" : f"{len(add_request.docs)} docs were added to {collection_name}"}
