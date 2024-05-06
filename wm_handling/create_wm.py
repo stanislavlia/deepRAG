@@ -8,6 +8,4 @@ data.extend(pd.read_csv("learn-ai-bbc/bbc_news_test.csv", usecols=['Text'])['Tex
 tfidfvectorizer = TfidfVectorizer(analyzer='word',stop_words= 'english')
 tfidf_wm = tfidfvectorizer.fit_transform(data)
 
-joblib.dump()
-
-print(tfidf_wm)
+joblib.dump(tfidf_wm, 'weighted_matrix/tfidf_wm.joblib')
