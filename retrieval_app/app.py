@@ -1,6 +1,7 @@
 from fastapi import FastAPI, status, File, UploadFile, HTTPException
-from vecdb_utils import RetrieverBase, DummyEmbeddingFunction
+from vecdb_utils import RetrieverBase
 from api_schemas import CreateCollectionSchema, AddDocstoCollectionSchema, QueryCollectionSchema
+from embedding_funcs import TfIdf_EmbeddingFunction, DummyEmbeddingFunction
 from pdf_utils import read_pdf_pages
 
 import os
@@ -13,13 +14,9 @@ import chromadb
 #Settings
 DB_PORT=8000
 DB_HOST="localhost"
-#STORAGE_DIR_PATH="/home/sliashko/Desktop/ft_search/retrieval_app/docs"
+
 STORAGE_DIR_PATH = "/app/docs"
 
-
-#Connect to db
-# db_client = chromadb.HttpClient(host=DB_HOST,
-# 								port=DB_PORT)
 
 
 #For Docker test
@@ -28,7 +25,8 @@ db_client = chromadb.PersistentClient(path="/app/chroma_data")
 
 
 #Load embedding func
-embedding_func = DummyEmbeddingFunction()
+#embedding_func = DummyEmbeddingFunction()
+embedding_func = TfIdf_EmbeddingFunction(path_to_vectorizer="/app/tfidf_vec.joblib")
 
 #init retrieval
 #TODO: make collection dict inside persistent (mb read from db for init)

@@ -2,7 +2,7 @@ from chromadb import Documents, EmbeddingFunction, Embeddings
 from sklearn.feature_extraction.text import TfidfVectorizer
 import joblib
 from numpy import ndarray
-
+from text_cleaning import clean_text
 
 
 class DummyEmbeddingFunction(EmbeddingFunction):
@@ -21,7 +21,11 @@ class TfIdf_EmbeddingFunction(EmbeddingFunction):
 
 	def __call__(self, docs: Documents) -> Embeddings :
 
-		computed_embeddings = self.vectorizer.transform(docs).toarray().tolist()
+		#clean text before computing embedds
+		cleaned_docs = [clean_text(doc) for doc in docs]
+
+
+		computed_embeddings = self.vectorizer.transform(cleaned_docs).toarray().tolist()
 		return computed_embeddings
 
 
