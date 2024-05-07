@@ -13,13 +13,20 @@ import chromadb
 #Settings
 DB_PORT=8000
 DB_HOST="localhost"
-STORAGE_DIR_PATH="/home/sliashko/Desktop/ft_search/retrieval_app/docs"
-
+#STORAGE_DIR_PATH="/home/sliashko/Desktop/ft_search/retrieval_app/docs"
+STORAGE_DIR_PATH = "/app/docs"
 
 
 #Connect to db
-db_client = chromadb.HttpClient(host=DB_HOST,
-								port=DB_PORT)
+# db_client = chromadb.HttpClient(host=DB_HOST,
+# 								port=DB_PORT)
+
+
+#For Docker test
+db_client = chromadb.PersistentClient(path="/app/chroma_data")
+
+
+
 #Load embedding func
 embedding_func = DummyEmbeddingFunction()
 
