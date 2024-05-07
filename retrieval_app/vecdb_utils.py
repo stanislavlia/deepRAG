@@ -2,6 +2,7 @@ import chromadb
 from chromadb import Documents, EmbeddingFunction, Embeddings
 from chromadb.errors import InvalidCollectionException
 import json
+from embedding_funcs import DummyEmbeddingFunction
 
 from uuid import uuid1
 
@@ -14,14 +15,6 @@ def conntect_to_db():
 	client = chromadb.PersistentClient(path=DBPATH)
 	return client
 
-
-class DummyEmbeddingFunction(EmbeddingFunction):
-	def __call__(self, docs: Documents) -> Documents:
-
-		#create dummy embeddings
-		computed_embeddings = [ [0.1, 0, 0.3, 5, 0, 1, 1, 0.7] for i in range(len(docs))]
-
-		return computed_embeddings
 
 
 
