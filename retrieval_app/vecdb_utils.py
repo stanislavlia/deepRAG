@@ -1,9 +1,8 @@
-import chromadb
-from chromadb import Documents, EmbeddingFunction, Embeddings
+from chromadb import Documents, EmbeddingFunction, Embeddings, Client
 from chromadb.errors import InvalidCollectionException
 import json
 from embedding_funcs import DummyEmbeddingFunction
-
+import chromadb
 from uuid import uuid1
 
 
@@ -19,26 +18,19 @@ def conntect_to_db():
 
 
 class RetrieverBase():
-	def __init__(self, db_client):
+	def __init__(self, db_client : Client):
 		
 		self.db_client = db_client
-		self.collections = dict()
 
 	def create_collection(self, collection_name, embedding_func, metadata=None):
 		
 		collection = self.db_client.get_or_create_collection(name=collection_name,
 													        embedding_function=embedding_func,
-															metadata=metadata)
-		#write created collection to dict
-		self.collections[collection_name] = collection
-				
+															metadata=metadata)		
 
 	def load_docs_to_collection(self, collection_name, docs, metadatas=None):
 		
-		if collection_name not in  self.collections:
-			raise InvalidCollectionException(f"Invalid collection name: {collection_name}")
-		
-		collection = self.collections[collection_name]
+		collection = self.db_client.get_collection(collection_name)
 		generated_ids = [str(uuid1()) for _ in range(len(docs))]
 
 		collection.add(ids=generated_ids, 
@@ -47,18 +39,12 @@ class RetrieverBase():
 	
 	def query_collection(self, collection_name, query, n_results=5):
 
-		if collection_name not in  self.collections:
-			raise InvalidCollectionException(f"Invalid collection name: {collection_name}")
-		
-		collection = self.collections[collection_name]
+		collection = self.db_client.get_collection(collection_name)
 		return collection.query(query_texts=query, n_results=n_results)
 	
 	def delete_collection(self, collection_name):
-
-		if collection_name not in  self.collections:
-			raise InvalidCollectionException(f"Invalid collection name: {collection_name}")
 		
-		collection = self.collections[collection_name]
+		collection = self.db_client.get_collection(collection_name)
 		collection.delete()
 
 		self.collections.pop(collection_name)
@@ -72,6 +58,9 @@ if __name__ == "__main__":
 	retriever = RetrieverBase(db_client)
 	retriever.create_collection("test", embedding_func=DummyEmbeddingFunction())
 
+	print("Colection created ", db_client.list_collections())
+
+	
 
 	retriever.load_docs_to_collection("test", ["Hello World!",
 										"Bye Bye",
@@ -80,5 +69,5 @@ if __name__ == "__main__":
 	
 	print("\nQUERY RESULT:\n")
 	print(json.dumps(retriever.query_collection("test", 
-											 "What is your name?",
-											   n_results=3), indent=2))
+											 "Bye bye?",
+											   n_results=4), indent=2))
