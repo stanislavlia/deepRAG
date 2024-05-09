@@ -24,7 +24,6 @@ class TfIdf_EmbeddingFunction(EmbeddingFunction):
 		#clean text before computing embedds
 		cleaned_docs = [clean_text(doc) for doc in docs]
 
-
 		computed_embeddings = self.vectorizer.transform(cleaned_docs).toarray().tolist()
 		return computed_embeddings
 

@@ -24,8 +24,9 @@ db_client = chromadb.PersistentClient(path="/app/chroma_data")
 
 
 
-#Load embedding func
-#embedding_func = DummyEmbeddingFunction()
+#For some reason, chroma runs its own default embedder; need to roll back and fix it
+
+
 embedding_func = TfIdf_EmbeddingFunction(path_to_vectorizer="/app/tfidf_vec.joblib")
 
 #init retrieval
@@ -36,7 +37,6 @@ retrieval = RetrieverBase(db_client=db_client)
 if not os.path.exists(STORAGE_DIR_PATH):
 	os.makedirs(STORAGE_DIR_PATH)
 	
-
 
 app = FastAPI()
 
