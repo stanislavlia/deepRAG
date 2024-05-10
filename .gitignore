@@ -3,7 +3,7 @@ retrieval_app/chromadb_data/*
 assets/*
 *.pdf
 .env
-chromadb_data/*
+chroma_data/*
 learn-ai-bbc/*
 __pycache__/*
 retrieval_app/__pycache__/*

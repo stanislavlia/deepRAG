@@ -6,7 +6,7 @@ import pandas as pd
 
 
 
-BACKEND_HOST = "http://0.0.0.0:8012/"
+BACKEND_HOST = "http://retrieval_app:8012/"
 
 
 def search_in_collection(query, n_results=4, collection_name="test"):

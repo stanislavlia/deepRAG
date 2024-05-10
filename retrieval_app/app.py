@@ -13,23 +13,19 @@ import chromadb
 
 #Settings
 DB_PORT=8000
-DB_HOST="localhost"
+DB_HOST="chroma"
 
 STORAGE_DIR_PATH = "/app/docs"
 
 
 
-#For Docker test
-db_client = chromadb.PersistentClient(path="/app/chroma_data")
+db_client = chromadb.HttpClient(host=DB_HOST, port=DB_PORT)
 
 
 embedding_func = DefaultEmbeddingFunction()
 
-#init retrieval
-#TODO: make collection dict inside persistent (mb read from db for init)
 retrieval = RetrieverBase(db_client=db_client)
 
-#create tmp dir
 if not os.path.exists(STORAGE_DIR_PATH):
 	os.makedirs(STORAGE_DIR_PATH)
 	
