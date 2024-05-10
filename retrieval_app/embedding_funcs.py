@@ -1,4 +1,5 @@
 from chromadb import Documents, EmbeddingFunction, Embeddings
+from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
 from sklearn.feature_extraction.text import TfidfVectorizer
 import joblib
 from numpy import ndarray

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, status, File, UploadFile, HTTPException
 from vecdb_utils import RetrieverBase
 from api_schemas import CreateCollectionSchema, AddDocstoCollectionSchema, QueryCollectionSchema
-from embedding_funcs import TfIdf_EmbeddingFunction, DummyEmbeddingFunction
+from embedding_funcs import TfIdf_EmbeddingFunction, DummyEmbeddingFunction, DefaultEmbeddingFunction
 from pdf_utils import read_pdf_pages
 
 import os
@@ -23,11 +23,7 @@ STORAGE_DIR_PATH = "/app/docs"
 db_client = chromadb.PersistentClient(path="/app/chroma_data")
 
 
-
-#For some reason, chroma runs its own default embedder; need to roll back and fix it
-
-
-embedding_func = TfIdf_EmbeddingFunction(path_to_vectorizer="/app/tfidf_vec.joblib")
+embedding_func = DefaultEmbeddingFunction()
 
 #init retrieval
 #TODO: make collection dict inside persistent (mb read from db for init)

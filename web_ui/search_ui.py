@@ -9,7 +9,7 @@ text_search = st.text_input("Search pages", value="")
 if text_search:
     
 	search_result = search_in_collection(query=text_search,
-                                        n_results=8,
+                                        n_results=20,
                                        collection_name="test")
 	search_result = parse_search_result(search_result)
 
