@@ -8,6 +8,9 @@ import os
 import datetime
 from dotenv import load_dotenv
 import chromadb
+import logging
+
+
 
 
 
@@ -20,7 +23,6 @@ STORAGE_DIR_PATH = "/app/docs"
 
 
 db_client = chromadb.HttpClient(host=DB_HOST, port=DB_PORT)
-
 
 embedding_func = DefaultEmbeddingFunction()
 
@@ -67,6 +69,9 @@ def add_docs_to_collection(collection_name, add_request : AddDocstoCollectionSch
 @app.post("/collections/query/{collection_name}")
 def query_collection(collection_name, query_request : QueryCollectionSchema):
 	
+
+	logging.info(f"Trying to query collection. Query={query_request.query}")
+
 	query_result = retrieval.query_collection(collection_name=collection_name,
 										      query=query_request.query,
 											   n_results=query_request.n_results)
@@ -89,10 +94,17 @@ def upload_pdf_to_collection(collection_name, file : UploadFile = File(...)):
 	
 
 	#read pdf and load to db
-	pages, metadatas = read_pdf_pages(os.path.join(STORAGE_DIR_PATH, file.filename))
-	retrieval.load_docs_to_collection(collection_name=collection_name,
-								    docs=pages,
-									metadatas=metadatas)
+	try:
+		pages, metadatas = read_pdf_pages(os.path.join(STORAGE_DIR_PATH, file.filename))
+		retrieval.load_docs_to_collection(collection_name=collection_name,
+										docs=pages,
+										metadatas=metadatas)
+		logging.info(f"File {file.filename} loaded to chroma")
+
+
+	except Exception as e:
+		logging.error(e)
+		
 	
 	return {"message" : f"{len(pages)} pages of {file.filename} were loaded to collection"}
 

@@ -30,6 +30,7 @@ services:
     
     depends_on:
       - retrieval_app
+      - chroma
     networks:
       - search_net
   

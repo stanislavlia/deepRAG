@@ -3,7 +3,7 @@ from streamlit import session_state as ss
 from streamlit_pdf_viewer import pdf_viewer
 
 import pandas as pd
-from client import search_in_collection, parse_search_result
+from client import search_in_collection, parse_search_result, send_pdf_to_server
 
 
 text_search = st.text_input("Search pages", value="")
@@ -12,7 +12,7 @@ text_search = st.text_input("Search pages", value="")
 if text_search:
     
 	search_result = search_in_collection(query=text_search,
-                                        n_results=20,
+                                        n_results=16,
                                        collection_name="test")
 	search_result = parse_search_result(search_result)
 
@@ -20,27 +20,8 @@ if text_search:
 	st.markdown("Result relevance")
 	st.write(df_search[["page", "source", "distance"]])
 
-
-#UPLOADING PDF
-if 'pdf_ref' not in ss:
-    ss.pdf_ref = None
-
-# Upload PDF file in the sidebar
-uploaded_file = st.sidebar.file_uploader("Upload PDF file", type=('pdf'), key='pdf')
-
-if uploaded_file:
-    ss.pdf_ref = uploaded_file
-
-if ss.pdf_ref:
-    binary_data = ss.pdf_ref.getvalue()
-    with open("mypdf.pdf", "wb") as f:
-        f.write(binary_data)
-    st.sidebar.write(f"File {uploaded_file.name} is uploaded!")
-
-
-
 N_cards_per_row = 1
-if text_search:
+if text_search and len(df_search):
     st.markdown("#### Search results")
     for n_row, row in df_search.reset_index().iterrows():
         i = n_row%N_cards_per_row
@@ -53,3 +34,23 @@ if text_search:
             st.caption(f"Page {row['page']}")
             st.markdown(row["document".strip()])
         
+
+
+#UPLOADING PDF ON SIDEBAR
+if 'pdf_ref' not in ss:
+    ss.pdf_ref = None
+
+# Upload PDF file in the sidebar
+uploaded_file = st.sidebar.file_uploader("Upload PDF file", type=('pdf'), key='pdf')
+
+if uploaded_file:
+    ss.pdf_ref = uploaded_file
+
+if ss.pdf_ref:
+    binary_data = ss.pdf_ref.getvalue()
+    send_pdf_to_server(binary_data, uploaded_file.name, "test")
+    
+    st.sidebar.caption(f"File **{uploaded_file.name}** is uploaded!")
+
+
+
