@@ -3,13 +3,10 @@ import json
 import os
 import pandas as pd
 import logging
+import sys
 
-
-
-#BACKEND_HOST = "http://retrieval_app:8012/"
-BACKEND_HOST="http://localhost:8012"
-#TMP_DIR = "/app/tmp"
-TMP_DIR = "/home/sliashko/Desktop/ft_search/web_ui"
+BACKEND_HOST = "http://retrieval_app:8012/"
+TMP_DIR = "/app/tmp"
 
 def search_in_collection(query, n_results=4, collection_name="test"):
 
