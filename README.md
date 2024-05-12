@@ -21,3 +21,7 @@
 1) Store logs in ELK stack
 2) Handle multiple collections
 3) Record info about users to Relational DB
+
+#### Notes for improving RAG  
+   1) Query augmentation with LLM
+   2) Cross encoder to score retrieved docs
