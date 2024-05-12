@@ -13,3 +13,7 @@
 3) Store files in localstack (local AWS S3)
 4) Add authorization
    
+##### may be needed later:
+1) Store logs in ELK stack
+2) Handle multiple collections
+3) Record info about users to Relational DB
