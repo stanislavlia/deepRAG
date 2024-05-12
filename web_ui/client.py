@@ -24,22 +24,21 @@ def search_in_collection(query, n_results=4, collection_name="test"):
 
 
 def send_pdf_to_server(binary_data, pdf_name, collection_name="test"):
-	
-	url = os.path.join(BACKEND_HOST, f"collections/upload_doc/{collection_name}")
-	
-
-	#save file to tmp file
-	with open(os.path.join(TMP_DIR, pdf_name), "wb") as f:
-		f.write(binary_data)
-	
-	files = {'file' : open(os.path.join(TMP_DIR, pdf_name), "rb")}
-
-	logging.info(f"Sending file {pdf_name} to backend")
-
-	response = requests.post(url, files=files)
-
-	logging.info(f"status code of sending {pdf_name}:  {response.status_code}")
-
+    url = f"{BACKEND_HOST}collections/upload_doc/{collection_name}"
+    
+    # Save file to temporary file
+    tmp_path = os.path.join(TMP_DIR, pdf_name)
+    with open(tmp_path, "wb") as f:
+        f.write(binary_data)
+    
+    # Open the file in binary mode and send as 'application/pdf'
+    with open(tmp_path, "rb") as f:
+        files = {'file': (pdf_name, f, 'application/pdf')}
+        logging.info(f"Sending file {pdf_name} to backend")
+        response = requests.post(url, files=files)
+    
+    logging.info(f"Status code of sending {pdf_name}: {response.status_code}")
+    return response
 
 def parse_search_result(search_result_response):
 
