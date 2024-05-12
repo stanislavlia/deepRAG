@@ -2,10 +2,10 @@
 ## TODOs
 
 #### quick tasks:
-1) Fix file upload from web ui in streamlit
+1) ~~Fix file upload from web ui in streamlit~~ done
 2) Rebuild app with preinstalled embedding model for chroma db
 3) Make github actions for auto-build and autotest
-4) Add logging to backend
+4) ~~Add logging to backend~~ done
 
 #### Long-term imortant things:
 1) Switch from streamlit to nextJS and normal frontend
