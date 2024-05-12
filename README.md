@@ -25,3 +25,4 @@
 #### Notes for improving RAG  
    1) Query augmentation with LLM
    2) Cross encoder to score retrieved docs
+   3) Use langsmith to monitor chain
