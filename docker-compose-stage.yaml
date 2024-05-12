@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  chroma:
+      image: chromadb/chroma:latest
+
+      volumes:
+        - ./chroma_data:/chroma/.chroma/index
+      
+      networks:
+        - search_net
+
+  retrieval_app:
+    image: stanislavlia/retrieval_app:stage
+
+    ports:
+      - 8012:8012
+
+    depends_on:
+      - chroma
+    
+    networks:
+      - search_net
+
+  web_ui:
+    image: stanislavlia/retrieval_ui:stage
+
+    ports:
+      - 8051:8051
+    
+    depends_on:
+      - retrieval_app
+      - chroma
+    networks:
+      - search_net
+  
+  
+    
+
+networks:
+    search_net:
+      driver: bridge
