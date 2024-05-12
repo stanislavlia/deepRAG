@@ -26,3 +26,4 @@
    1) Query augmentation with LLM
    2) Cross encoder to score retrieved docs
    3) Use langsmith to monitor chain
+   4) Routing between databases/promts
