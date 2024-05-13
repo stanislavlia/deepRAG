@@ -5,6 +5,9 @@ docker compose -f docker-compose-stage.yaml up
 ```
 Web UI will be located at ``localhost:8051``
 
+### Usage
+![example](media/search_example.png)
+
 
 ## TODOs
 
