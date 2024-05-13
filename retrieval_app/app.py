@@ -25,16 +25,27 @@ STORAGE_DIR_PATH = "/app/docs"
 
 
 db_client = chromadb.HttpClient(host=DB_HOST, port=DB_PORT)
+logging.info("Connected to db...")
+
 
 embedding_func = DefaultEmbeddingFunction()
 
+
 retrieval = RetrieverBase(db_client=db_client)
+logging.info("Retrieval is ready...")
 
 
 
 #so far we have only 1 collection test
 retrieval.create_collection(collection_name='test',
                             embedding_func=embedding_func)
+logging.info("Started to load embedding model...")
+
+retrieval.query_collection(collection_name="test",
+                            query="test_query")
+logging.info("Loading is finished")
+
+
 
 if not os.path.exists(STORAGE_DIR_PATH):
 	os.makedirs(STORAGE_DIR_PATH)
