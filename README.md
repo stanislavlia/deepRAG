@@ -5,6 +5,9 @@ docker compose -f docker-compose-stage.yaml up
 ```
 Web UI will be located at ``localhost:8051``
 
+### Usage
+![example](media/search_example.png)
+
 
 ## TODOs
 
@@ -14,6 +17,8 @@ Web UI will be located at ``localhost:8051``
 3) Make github actions for auto-build and autotest
 4) ~~Add logging to backend~~ done
 5) Improve text extraction from PDF
+6) Add error handling to streamlit (when backend is not ready and when empty results)
+7) Add option ``n_result`` in UI
    
 
 #### Long-term imortant things:
