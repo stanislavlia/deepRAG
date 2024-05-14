@@ -5,8 +5,10 @@ COPY ./requirements.txt /app/requirements.txt
 WORKDIR /app
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
+#run script to load embedding model in advance
+COPY ./preload_embed.py /app/preload_embed.py
+RUN python3 preload_embed.py
 
-COPY ./tfidf_vec.joblib /app/tfidf_vec.joblib
 
 COPY ./api_schemas.py /app/api_schemas.py
 COPY ./app.py /app/app.py
@@ -14,6 +16,7 @@ COPY ./pdf_utils.py /app/pdf_utils.py
 COPY ./vecdb_utils.py /app/vecdb_utils.py
 COPY ./text_cleaning.py /app/text_cleaning.py
 COPY ./embedding_funcs.py /app/embedding_funcs.py
+
 
 
 
