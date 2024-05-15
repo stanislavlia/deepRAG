@@ -27,7 +27,7 @@ Web UI will be located at ``localhost:8051``
 3) Store files in localstack (local AWS S3)
 4) Add authorization
 5) Add other formats apart PDF (doc, txt, pptx etc)
-6) Migrate fully to Langchain
+6) **Migrate fully to Langchain** - **IN PROGRESS**
    
 ##### may be needed later:
 1) Store logs in ELK stack
