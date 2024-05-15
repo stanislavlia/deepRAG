@@ -12,6 +12,11 @@ import os
 import datetime
 import json
 
+#TODO
+#1) Write Dockerfile and build app
+#2) Rewrite streamlit frontend for updated API
+
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
