@@ -11,14 +11,11 @@ Web UI will be located at ``localhost:8051``
 
 ## TODOs
 
-#### quick tasks:
-1) ~~Fix file upload from web ui in streamlit~~ done
-2) ~~Rebuild app with preinstalled embedding model for chroma db~~ done
-3) Make github actions for auto-build and autotest
-4) ~~Add logging to backend~~ done
-5) Improve text extraction from PDF
-6) Add error handling to streamlit (when backend is not ready and when empty results)
-7) Add option ``n_result`` in UI
+#### current tasks:
+1) Write unit-tests for backend and put them to CI pipeline
+2) Make search to be RAG. (Add LLM on top of generated docs)
+3) Migrate from Streamlit to classic frontend (**NextJS + HTML**)
+
    
 
 #### Long-term imortant things:
