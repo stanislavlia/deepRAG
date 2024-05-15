@@ -12,72 +12,88 @@ import os
 import datetime
 import json
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-STORAGE_DIR_PATH="/home/stanislav/Desktop/ft_search/retrieval_app_langchain/tmp"
+STORAGE_DIR_PATH = "/home/stanislav/Desktop/ft_search/retrieval_app_langchain/tmp"
 
 if not os.path.exists(STORAGE_DIR_PATH):
-	os.makedirs(STORAGE_DIR_PATH)
+    os.makedirs(STORAGE_DIR_PATH)
 
 text_splitter = RecursiveCharacterTextSplitter(separators=["\n", ".", "?", "!", " ", ""])
 embedding_func = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
-
+logging.info("Embedding model is ready...")
 
 vectorstore = get_vecstore_client(embedding_func=embedding_func)
+logging.info("Vectorstore client initialized.")
 
 app = FastAPI()
 
-
-#Pydantic models
+# Pydantic models
 class QuerySchema(BaseModel):
-	query : str
-	n_results : int
+    query: str
+    n_results: int
 
-
-
+# Endpoints
 @app.get("/")
 def home():
-    heartbeat = vectorstore._client.heartbeat()
-
-    return {
-            "backend" : "langchain",
+    logging.info("Accessed the home endpoint.")
+    try:
+        heartbeat = vectorstore._client.heartbeat()
+        logging.info("Database heartbeat successful.")
+        return {
+            "backend": "langchain",
             "info": "Retrieval service is running",
             "status": "healthy",
             "timestamp": datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S"),
             "db_heartbeat": heartbeat
-            }
+        }
+    except Exception as e:
+        logging.error(f"Database heartbeat failed: {e}")
+        raise HTTPException(status_code=500, detail="Database connection failed")
 
 @app.post("/upload_pdf")
-def load_pdf_to_vectore(file : UploadFile = File(...)):
+def load_pdf_to_vectore(file: UploadFile = File(...)):
     if file.content_type != 'application/pdf':
-         return {"message": "This endpoint accepts only PDF files."}
-    
+        logging.warning("Attempted to upload a non-PDF file.")
+        return {"message": "This endpoint accepts only PDF files."}
 
-    content = file.file.read()
-    file_path = os.path.join(STORAGE_DIR_PATH, file.filename)
+    logging.info(f"Received file: {file.filename} for upload.")
+    try:
+        content = file.file.read()
+        file_path = os.path.join(STORAGE_DIR_PATH, file.filename)
 
-    with open(file_path, "wb") as f:
-        f.write(content)
-    
-    chunks = load_and_split_doc(path=file_path, text_splitter=text_splitter)
+        with open(file_path, "wb") as f:
+            f.write(content)
 
-    add_chunks_to_db(langchain_chromadb_vecstore=vectorstore,
-                     chunks=chunks)
-    return {"message" : f"{len(chunks)} chunks of {file.filename} were added"}
-
+        chunks = load_and_split_doc(path=file_path, text_splitter=text_splitter)
+        add_chunks_to_db(langchain_chromadb_vecstore=vectorstore, chunks=chunks)
+        
+        message = f"{len(chunks)} chunks of {file.filename} were added"
+        logging.info(message)
+        return {"message": message}
+    except Exception as e:
+        logging.error(f"Failed to process file {file.filename}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/query")
-def query_docs(query : QuerySchema):
-    
-    retrieved_docs = vectorstore.max_marginal_relevance_search(query=query.query,
-                                                     k=query.n_results,
-                                                     fetch_k=(query.n_results * 2),
-                                                     )
-    
-    result = {"chunks_retrieved" : len(retrieved_docs),
-              "docs" : [doc.page_content for doc in retrieved_docs],
-              "metadatas" : [doc.metadata for doc in retrieved_docs]}
-    
-    
-    return result
+def query_docs(query: QuerySchema):
+    logging.info(f"Querying documents with query: {query.query}")
+    try:
+        retrieved_docs = vectorstore.max_marginal_relevance_search(
+            query=query.query,
+            k=query.n_results,
+            fetch_k=(query.n_results * 2),
+        )
 
-
+        result = {
+            "chunks_retrieved": len(retrieved_docs),
+            "docs": [doc.page_content for doc in retrieved_docs],
+            "metadatas": [doc.metadata for doc in retrieved_docs]
+        }
+        
+        logging.info(f"Query successful, retrieved {len(retrieved_docs)} chunks.")
+        return result
+    except Exception as e:
+        logging.error(f"Query failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
