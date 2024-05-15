@@ -1,7 +1,7 @@
 name: Build and Push Docker Image
 
-env:
-  IMAGE_TAG: beta_v1
+# env:
+#   IMAGE_TAG: beta_v1
 
 on:
   push:
@@ -27,10 +27,20 @@ jobs:
 
       - name: Build and push retrieval_app image
         run: |
-          docker build --no-cache -t stanislavlia/retrieval_app:${{ env.IMAGE_TAG }} -f ./retrieval_app/Dockerfile ./retrieval_app
+          docker build --no-cache -t stanislavlia/retrieval_app -f ./retrieval_app/Dockerfile ./retrieval_app
           docker push stanislavlia/retrieval_app:stage
         
       - name: Build and push web_ui image
         run: |
-          docker build --no-cache -t stanislavlia/retrieval_ui:${{ env.IMAGE_TAG }} -f ./web_ui/Dockerfile ./web_ui
+          docker build --no-cache -t stanislavlia/retrieval_ui -f ./web_ui/Dockerfile ./web_ui
           docker push stanislavlia/retrieval_ui:stage
+
+      # - name: Build and push retrieval_app image
+      #   run: |
+      #     docker build --no-cache -t stanislavlia/retrieval_app:${{ env.IMAGE_TAG }} -f ./retrieval_app/Dockerfile ./retrieval_app
+      #     docker push stanislavlia/retrieval_app:stage
+        
+      # - name: Build and push web_ui image
+      #   run: |
+      #     docker build --no-cache -t stanislavlia/retrieval_ui:${{ env.IMAGE_TAG }} -f ./web_ui/Dockerfile ./web_ui
+      #     docker push stanislavlia/retrieval_ui:stage
