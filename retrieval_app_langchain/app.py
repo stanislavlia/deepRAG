@@ -12,19 +12,33 @@ import os
 import datetime
 import json
 
+#TODO
+#1) Write Dockerfile and build app
+#2) Rewrite streamlit frontend for updated API
+
+
+DB_PORT=8000
+DB_HOST="chroma"
+STORAGE_DIR_PATH = "/app/docs"
+
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-STORAGE_DIR_PATH = "/home/stanislav/Desktop/ft_search/retrieval_app_langchain/tmp"
 
 if not os.path.exists(STORAGE_DIR_PATH):
     os.makedirs(STORAGE_DIR_PATH)
 
-text_splitter = RecursiveCharacterTextSplitter(separators=["\n", ".", "?", "!", " ", ""])
+text_splitter = RecursiveCharacterTextSplitter(separators=["\n", ".", "?", "!", " ", ""],
+                                             chunk_size=1000,
+                                             chunk_overlap=100)
+
 embedding_func = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
 logging.info("Embedding model is ready...")
 
-vectorstore = get_vecstore_client(embedding_func=embedding_func)
+vectorstore = get_vecstore_client(embedding_func=embedding_func,
+                                 host=DB_HOST,
+                                 port=DB_PORT)
+
 logging.info("Vectorstore client initialized.")
 
 app = FastAPI()
@@ -53,7 +67,7 @@ def home():
         raise HTTPException(status_code=500, detail="Database connection failed")
 
 @app.post("/upload_pdf")
-def load_pdf_to_vectore(file: UploadFile = File(...)):
+def load_pdf_to_vecstore(file: UploadFile = File(...)):
     if file.content_type != 'application/pdf':
         logging.warning("Attempted to upload a non-PDF file.")
         return {"message": "This endpoint accepts only PDF files."}

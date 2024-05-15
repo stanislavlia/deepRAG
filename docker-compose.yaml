@@ -11,7 +11,7 @@ services:
         - search_net
 
   retrieval_app:
-    image: stanislavlia/retrieval_app:latest
+    image: stanislavlia/retrieval_app:langchain
 
     ports:
       - 8012:8012
@@ -23,7 +23,7 @@ services:
       - search_net
 
   web_ui:
-    image: stanislavlia/retrieval_ui
+    image: stanislavlia/retrieval_ui:langchain
 
     ports:
       - 8051:8051
