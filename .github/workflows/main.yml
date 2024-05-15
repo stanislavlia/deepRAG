@@ -6,6 +6,10 @@ env:
 on:
   push:
     branches: ['main']
+    paths:
+      - 'retrieval_app/**'
+      - 'web_ui/**'
+      - '.github/workflows/**'
 
 jobs:
   push_to_registry:
