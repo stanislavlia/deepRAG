@@ -27,7 +27,6 @@ def get_vecstore_client(embedding_func):
     
 
 
-
 def load_and_split_doc(path, text_splitter):
     loader = PyPDFLoader(file_path=path)
     chunks = loader.load_and_split(text_splitter=text_splitter)
