@@ -8,3 +8,4 @@ learn-ai-bbc/*
 __pycache__/*
 retrieval_app/__pycache__/*
 retrieval_app/tmp/*
+retrieval_app_langchain/__pycache__/*
