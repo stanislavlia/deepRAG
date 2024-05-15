@@ -11,10 +11,12 @@ CHROMA_DB_PORT=8012
 
 
 
-def get_vecstore_client(embedding_func):
+def get_vecstore_client(embedding_func, host="localhost", port=8012):
 
     #non-persistent client for now
-    db_client = chromadb.Client()
+    #db_client = chromadb.Client()
+
+    db_client = chromadb.HttpClient(host=host, port=port)
 
     #create langchain wrapper for chroma
     vecstore = Chroma(client=db_client,

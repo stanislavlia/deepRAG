@@ -1,6 +1,5 @@
 import streamlit as st
 from streamlit import session_state as ss
-from streamlit_pdf_viewer import pdf_viewer
 
 import pandas as pd
 from client import search_in_collection, parse_search_result, send_pdf_to_server
@@ -13,12 +12,10 @@ if text_search:
     
 	search_result = search_in_collection(query=text_search,
                                         n_results=5,
-                                       collection_name="test")
+                                       )
 	search_result = parse_search_result(search_result)
 
 	df_search = pd.DataFrame(search_result)
-	st.markdown("Result relevance")
-	st.write(df_search[["page", "source", "distance"]])
 
 N_cards_per_row = 1
 if text_search and len(df_search):
@@ -48,7 +45,7 @@ if uploaded_file:
 
 if ss.pdf_ref:
     binary_data = ss.pdf_ref.getvalue()
-    send_pdf_to_server(binary_data, uploaded_file.name, "test")
+    send_pdf_to_server(binary_data, uploaded_file.name)
     
     st.sidebar.caption(f"File **{uploaded_file.name}** is uploaded!")
 
