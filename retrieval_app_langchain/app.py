@@ -17,6 +17,7 @@ vecdb = Chroma(client=db_client,
                embedding_function=embedding_func
                )
 
+vecdb.search
 
 docs = vecdb.similarity_search_with_relevance_scores(query="See you later")
 
