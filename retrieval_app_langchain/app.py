@@ -1,29 +1,23 @@
-import chromadb
+from retrieval import get_vecstore_client, load_and_split_doc, add_chunks_to_db
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-#create chroma client
-db_client = chromadb.Client()
-#create collection
-collection = db_client.get_or_create_collection(name="test")
-collection.add(ids=["1", "2", "3"], documents=["Hello World!", "Bye bye", "I am Stas"])
 
+text_splitter = RecursiveCharacterTextSplitter(separators=["\n", ".", "?", "!", " ", ""])
 embedding_func = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
 
-#use langchain wrapper
-vecdb = Chroma(client=db_client,
-               collection_name="test",
-               embedding_function=embedding_func
-               )
 
-vecdb.search
+vectorstore = get_vecstore_client(embedding_func=embedding_func)
 
-docs = vecdb.similarity_search_with_relevance_scores(query="See you later")
+chunks = load_and_split_doc(path="/home/stanislav/Desktop/ft_search/retrieval_app_langchain/LLMs are few shot learners.pdf",
+                            text_splitter=text_splitter)
 
-print(docs)
+print("Loaded chunks ", len(chunks))
+
+add_chunks_to_db(langchain_chromadb_vecstore=vectorstore,
+                 chunks=chunks)
+
+print(vectorstore.max_marginal_relevance_search(query="Math problems solving", k=2))
 
 
-docs = vecdb.similarity_search_with_relevance_scores(query="Glad to see you!")
-
-print(docs)
