@@ -48,6 +48,12 @@ class QuerySchema(BaseModel):
     query: str
     n_results: int
 
+class QuestionSchema(BaseModel):
+    question : str
+    fetch_n_docs : Optional[int] = 4
+    return_sources : Optional[bool] = False
+    
+
 # Endpoints
 @app.get("/")
 def home():
@@ -111,3 +117,8 @@ def query_docs(query: QuerySchema):
     except Exception as e:
         logging.error(f"Query failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/ask")
+def ask_question():
+    pass

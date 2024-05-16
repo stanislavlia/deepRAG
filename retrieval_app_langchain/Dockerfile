@@ -13,6 +13,8 @@ COPY ./app.py /app/app.py
 COPY ./retrieval.py /app/retrieval.py
 
 RUN pip install pypdf
+RUN pip install openai
+
 
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8012"]
 

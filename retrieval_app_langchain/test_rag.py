@@ -22,8 +22,8 @@ splits = ["Hello everyone! I am Stanislav and I study Computer Science",
 
 vectorstore = Chroma.from_texts(texts=splits, embedding=embedding_func)
 
-retriever = vectorstore.as_retriever()
-
+retriever = vectorstore.as_retriever(search_type="mmr")
+ 
 
 llm = ChatOpenAI(model="gpt-3.5-turbo",
                   temperature=0.2,
