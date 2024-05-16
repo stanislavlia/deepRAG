@@ -4,17 +4,45 @@ from langchain_community.embeddings.sentence_transformer import SentenceTransfor
 from langchain_community.vectorstores import Chroma
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from uuid import uuid4
+from langchain_core.prompts import PromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
 
 CHROMA_DB_HOST="localhost"
 CHROMA_DB_PORT=8012
 
+RAG_PROMT = PromptTemplate.from_template(
+    """
+        Context:
+            {docs}
+        Question:
+            {question}
+       You are a helpful expert in answering questions related to provided context.
+       If provided documents do not relate to the question, feel free to answer the question yourself.
+      """
+)
 
+
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
+
+
+def create_ragchain(retriever, llm):
+    
+    #define pipeline
+    ragchain = (
+        {"docs" : retriever | format_docs,
+         "question" :  RunnablePassthrough()} 
+         | RAG_PROMT 
+         | llm
+         | StrOutputParser()
+    )
+
+    return ragchain
 
 def get_vecstore_client(embedding_func, host="localhost", port=8012):
 
-    #non-persistent client for now
-    #db_client = chromadb.Client()
+
 
     db_client = chromadb.HttpClient(host=host, port=port)
 
@@ -38,8 +66,6 @@ def add_chunks_to_db(langchain_chromadb_vecstore,
                     collection_name="test"):
     
     langchain_chromadb_vecstore.add_documents(documents=chunks)
-
-
 
 
 
