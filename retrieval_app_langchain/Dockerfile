@@ -9,8 +9,10 @@ RUN pip install --no-cache-dir --upgrade -r requirements.txt
 #download embedding model 
 RUN python3 preload_model.py
 
+
 COPY ./app.py /app/app.py
 COPY ./retrieval.py /app/retrieval.py
+COPY ./.env /app/.env
 
 RUN pip install pypdf
 RUN pip install openai
