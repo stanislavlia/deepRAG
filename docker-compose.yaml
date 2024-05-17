@@ -23,7 +23,7 @@ services:
       - search_net
 
   web_ui:
-    image: stanislavlia/retrieval_ui:langchain
+    image: stanislavlia/retrieval_ui:latest
 
     ports:
       - 8051:8051

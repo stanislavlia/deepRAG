@@ -60,7 +60,7 @@ class QuerySchema(BaseModel):
 
 class QuestionSchema(BaseModel):
     question : str
-    fetch_n_docs : Optional[int] = 4
+    fetch_n_docs : Optional[int] = 8
     return_sources : Optional[bool] = False
 
 

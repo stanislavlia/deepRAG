@@ -2,34 +2,40 @@ import streamlit as st
 from streamlit import session_state as ss
 
 import pandas as pd
-from client import search_in_collection, parse_search_result, send_pdf_to_server
+from client import search_in_collection, parse_search_result, send_pdf_to_server, ask_question
 
 
 text_search = st.text_input("Search pages", value="")
 
 
 if text_search:
+
+    llm_answer = ask_question(question=text_search)
+
+    st.markdown(llm_answer)
+
+# if text_search:
     
-	search_result = search_in_collection(query=text_search,
-                                        n_results=5,
-                                       )
-	search_result = parse_search_result(search_result)
+# 	search_result = search_in_collection(query=text_search,
+#                                         n_results=5,
+#                                        )
+# 	search_result = parse_search_result(search_result)
 
-	df_search = pd.DataFrame(search_result)
+# 	df_search = pd.DataFrame(search_result)
 
-N_cards_per_row = 1
-if text_search and len(df_search):
-    st.markdown("#### Search results")
-    for n_row, row in df_search.reset_index().iterrows():
-        i = n_row%N_cards_per_row
-        if i==0:
-            st.write("---")
-            cols = st.columns(N_cards_per_row, gap="large")
-        # draw the card
-        with cols[n_row%N_cards_per_row]:
-            st.markdown(f"Source: {row['source'].strip()}")
-            st.caption(f"Page {row['page']}")
-            st.markdown(row["document".strip()])
+# N_cards_per_row = 1
+# if text_search and len(df_search):
+#     st.markdown("#### Search results")
+#     for n_row, row in df_search.reset_index().iterrows():
+#         i = n_row%N_cards_per_row
+#         if i==0:
+#             st.write("---")
+#             cols = st.columns(N_cards_per_row, gap="large")
+#         # draw the card
+#         with cols[n_row%N_cards_per_row]:
+#             st.markdown(f"Source: {row['source'].strip()}")
+#             st.caption(f"Page {row['page']}")
+#             st.markdown(row["document".strip()])
         
 
 
