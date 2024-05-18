@@ -34,7 +34,7 @@ jobs:
 
       - name: Build and push retrieval_app image
         run: |
-          docker build --no-cache -t stanislavlia/retrieval_app_langchain:${{ env.IMAGE_TAG }} -f ./retrieval_app_langchain/Dockerfile ./retrieval_app_langchain
+          docker build --no-cache -t stanislavlia/retrieval_app:${{ env.IMAGE_TAG }} -f ./retrieval_app_langchain/Dockerfile ./retrieval_app_langchain
           docker push stanislavlia/retrieval_app:${{ env.IMAGE_TAG }}
         
       - name: Build and push web_ui image
