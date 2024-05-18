@@ -1,22 +1,24 @@
-from retrieval import get_vecstore_client, load_and_split_doc, add_chunks_to_db
+from retrieval import get_vecstore_client, load_and_split_doc, add_chunks_to_db, create_ragchain
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, List
 from langchain.schema import Document
+from langchain_community.chat_models.openai import ChatOpenAI
+
 
 from fastapi import FastAPI, status, File, UploadFile, HTTPException
 import logging
 import os
 import datetime
 import json
+from dotenv import load_dotenv
+import os
 
-#TODO
-#1) Write Dockerfile and build app
-#2) Rewrite streamlit frontend for updated API
+load_dotenv()
 
-
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 DB_PORT=8000
 DB_HOST="chroma"
 STORAGE_DIR_PATH = "/app/docs"
@@ -28,18 +30,26 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 if not os.path.exists(STORAGE_DIR_PATH):
     os.makedirs(STORAGE_DIR_PATH)
 
+#INDEXING
 text_splitter = RecursiveCharacterTextSplitter(separators=["\n", ".", "?", "!", " ", ""],
                                              chunk_size=1000,
                                              chunk_overlap=100)
-
 embedding_func = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
 logging.info("Embedding model is ready...")
-
 vectorstore = get_vecstore_client(embedding_func=embedding_func,
                                  host=DB_HOST,
                                  port=DB_PORT)
-
 logging.info("Vectorstore client initialized.")
+
+#LLM 
+llm = ChatOpenAI(model="gpt-3.5-turbo",
+                  temperature=0.2,
+                    max_tokens=500,
+                    api_key=OPENAI_API_KEY)
+
+rag_chain = create_ragchain(vectorstore.as_retriever(),
+                            llm=llm)
+
 
 app = FastAPI()
 
@@ -47,6 +57,12 @@ app = FastAPI()
 class QuerySchema(BaseModel):
     query: str
     n_results: int
+
+class QuestionSchema(BaseModel):
+    question : str
+    fetch_n_docs : Optional[int] = 8
+    return_sources : Optional[bool] = False
+
 
 # Endpoints
 @app.get("/")
@@ -110,4 +126,18 @@ def query_docs(query: QuerySchema):
         return result
     except Exception as e:
         logging.error(f"Query failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/ask")
+def ask_question(question : QuestionSchema):
+    logging.info(f"Asking question: {question.question}")
+    
+    try:
+        llm_response = rag_chain.invoke(input=question.question)
+
+        logging.info(f"Sucessfuly answered question: {question.question}")
+        return {'answer' : llm_response}
+    except Exception as e:
+        logging.error(f"Question {question.question} failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))

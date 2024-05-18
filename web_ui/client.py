@@ -9,6 +9,18 @@ BACKEND_HOST = "http://retrieval_app:8012/"
 TMP_DIR = "/app/tmp"
 
 
+def ask_question(question, fetch_n_docs=8):
+	url = os.path.join(BACKEND_HOST, "ask/")
+	headers = {'Content-Type': 'application/json'}
+
+	request_json = json.dumps({"question" : question,
+							   "fetch_n_docs" : fetch_n_docs,})
+	
+	llm_answer = requests.post(url=url, data=request_json, headers=headers).json()
+
+	return llm_answer["answer"]
+
+
 def search_in_collection(query, n_results=4):
 
 	url = os.path.join(BACKEND_HOST, "query/")
