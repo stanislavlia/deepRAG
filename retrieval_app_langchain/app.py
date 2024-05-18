@@ -1,4 +1,6 @@
-from retrieval import get_vecstore_client, load_and_split_doc, add_chunks_to_db, create_ragchain
+from retrieval import get_vecstore_client, load_and_split_doc, add_chunks_to_db
+from retrieval import create_ragchain_with_sources, create_ragchain
+
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -6,7 +8,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, Dict, List
 from langchain.schema import Document
 from langchain_community.chat_models.openai import ChatOpenAI
-
+from langchain.callbacks import get_openai_callback
 
 from fastapi import FastAPI, status, File, UploadFile, HTTPException
 import logging
@@ -50,6 +52,10 @@ llm = ChatOpenAI(model="gpt-3.5-turbo",
 rag_chain = create_ragchain(vectorstore.as_retriever(),
                             llm=llm)
 
+rag_chain_with_sources = create_ragchain_with_sources(vectorstore.as_retriever(),
+                                                      llm=llm)
+logging.info("Chains are initialized...")
+
 
 app = FastAPI()
 
@@ -60,7 +66,7 @@ class QuerySchema(BaseModel):
 
 class QuestionSchema(BaseModel):
     question : str
-    fetch_n_docs : Optional[int] = 8
+    fetch_n_docs : Optional[int] = 5
     return_sources : Optional[bool] = False
 
 
@@ -134,10 +140,47 @@ def ask_question(question : QuestionSchema):
     logging.info(f"Asking question: {question.question}")
     
     try:
-        llm_response = rag_chain.invoke(input=question.question)
+        with get_openai_callback() as openai_cb:
+            llm_response = rag_chain.invoke(input=question.question)
 
+    
+            response_json = {"answer" : llm_response,
+                             "tokens_used" : openai_cb.total_tokens,
+                             "tokens_completion" : openai_cb.completion_tokens,
+                             "total_cost_usd" : openai_cb.total_cost
+                             }
+            
+        logging.info(f"question: {question.question}; tokens_used: {openai_cb.total_tokens}; total_cost_usd: {openai_cb.total_cost}")
         logging.info(f"Sucessfuly answered question: {question.question}")
-        return {'answer' : llm_response}
+        return response_json
     except Exception as e:
         logging.error(f"Question {question.question} failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/ask_with_sources")
+def ask_question_sources(question : QuestionSchema):
+    logging.info(f"Asking question with sources: {question.question}")
+
+    try:
+        llm_response = rag_chain_with_sources.invoke(input=question.question)
+        with get_openai_callback() as openai_cb:
+            llm_response = rag_chain_with_sources.invoke(input=question.question)
+            docs_content = [doc.page_content for doc in llm_response["docs"]]
+            docs_metadata = [doc.metadata for doc in llm_response["docs"]]
+
+            response_json = {"answer" : llm_response["answer"],
+                             "source_docs" : docs_content, 
+                             "source_docs_metadata": docs_metadata,
+                             "tokens_used" : openai_cb.total_tokens,
+                             "tokens_completion" : openai_cb.completion_tokens,
+                             "total_cost_usd" : openai_cb.total_cost
+                             }
+            
+            logging.info(f"question_with_sources: {question.question}; tokens_used: {openai_cb.total_tokens}; total_cost_usd: {openai_cb.total_cost}")
+            logging.info(f"Sucessfuly answered question: {question.question}")
+        
+        return response_json
+
+    except Exception as e:
+            logging.error(f"Question {question.question} failed: {e}")
+            raise HTTPException(status_code=500, detail=str(e))

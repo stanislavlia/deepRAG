@@ -11,6 +11,10 @@ from langchain_community.chat_models.openai import ChatOpenAI
 from dotenv import load_dotenv
 import os
 
+
+from langchain.callbacks import get_openai_callback
+
+
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -57,7 +61,11 @@ rag_chain_with_sources = RunnableParallel(
 
 
 
+#docs come from retriever
+#answer comes from rag chain
 
 
 
-print(rag_chain_with_sources.invoke("Tell me about these two people. Where are they different?"))
+with get_openai_callback() as cb:
+  print(rag_chain_with_sources.invoke("Tell me about these two people. Where are they different?"))
+  print(cb) #todo; writes cost to logs

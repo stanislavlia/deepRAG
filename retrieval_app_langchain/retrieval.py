@@ -5,7 +5,7 @@ from langchain_community.vectorstores import Chroma
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.prompts import PromptTemplate
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 from langchain_core.output_parsers import StrOutputParser
 
 CHROMA_DB_HOST="localhost"
@@ -25,6 +25,22 @@ RAG_PROMT = PromptTemplate.from_template(
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
+
+
+def create_ragchain_with_sources(retriever, llm):
+    
+    rag_chain_from_docs = (RunnablePassthrough.assign(docs=(lambda x: format_docs(x["docs"])))
+                       | RAG_PROMT
+                       | llm
+                       | StrOutputParser()
+                       )
+    
+    rag_chain_with_sources = RunnableParallel(
+                    {"docs" : retriever,
+                    "question" : RunnablePassthrough()}).assign(answer=rag_chain_from_docs)
+
+    return rag_chain_with_sources
+
 
 
 def create_ragchain(retriever, llm):
