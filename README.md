@@ -13,18 +13,18 @@ Web UI will be located at ``localhost:8051``
 
 #### current tasks:
 1) Write unit-tests for backend and put them to CI pipeline
-2) Make search to be RAG. (Add LLM on top of generated docs)
-3) Migrate from Streamlit to classic frontend (**NextJS + HTML**)
+2) Migrate from Streamlit to classic frontend (**NextJS + HTML**)
+3) Fix ci to work  with .env file properly
 
    
 
 #### Long-term imortant things:
 1) Switch from streamlit to nextJS and normal frontend
-2) Add LLM and turn app to be RAG (Retrieval Augmented Generation)
+2) ~~Add LLM and turn app to be RAG (Retrieval Augmented Generation)~~
 3) Store files in localstack (local AWS S3)
 4) Add authorization
 5) Add other formats apart PDF (doc, txt, pptx etc)
-6) **Migrate fully to Langchain** - **IN PROGRESS**
+6) ~~Migrate fully to Langchain~~ - **DONE**
    
 ##### may be needed later:
 1) Store logs in ELK stack
