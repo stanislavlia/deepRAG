@@ -10,6 +10,13 @@ on:
       - 'retrieval_app_langchain/**'
       - 'web_ui/**'
       - '.github/workflows/**'
+      
+  pull_request:
+    branches: [main]
+    paths:
+      - 'retrieval_app_langchain/**'
+      - 'web_ui/**'
+      - '.github/workflows/**'
 
 jobs:
   push_to_registry:
