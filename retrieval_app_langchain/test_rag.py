@@ -1,11 +1,11 @@
-from retrieval import create_ragchain
+from retrieval import create_ragchain, format_docs
 import chromadb
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.prompts import PromptTemplate
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 from langchain_core.output_parsers import StrOutputParser
 from langchain_community.chat_models.openai import ChatOpenAI
 from dotenv import load_dotenv
@@ -34,4 +34,30 @@ llm = ChatOpenAI(model="gpt-3.5-turbo",
 
 rag_chain = create_ragchain(retriever, llm)
 
-print(rag_chain.invoke("What are these people? What can you tell about them?"))
+#RAG with sources
+RAG_PROMT = PromptTemplate.from_template(
+    """
+        Context:
+            {docs}
+        Question:
+            {question}
+       You are a helpful expert in answering questions related to provided context.
+       If provided documents do not relate to the question, feel free to answer the question yourself.
+      """
+)
+
+rag_chain_from_docs = (RunnablePassthrough.assign(docs=(lambda x: format_docs(x["docs"])))
+                       | RAG_PROMT
+                       | llm
+                       | StrOutputParser()
+                       )
+
+rag_chain_with_sources = RunnableParallel(
+    {"docs" : retriever, "question" : RunnablePassthrough()}).assign(answer=rag_chain_from_docs)
+
+
+
+
+
+
+print(rag_chain_with_sources.invoke("Tell me about these two people. Where are they different?"))
