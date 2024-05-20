@@ -83,19 +83,8 @@ rag_chain = create_ragchain(retriever=retriever,
 
 grader_chain = (GRADER_PROMT | llm | JsonOutputParser())
 
-# print("Question 1:")
-# print(grader_chain.invoke({"document" : "Bangkok is the capital of Thailand. It is largest city. Bangkok is a wonderful place for tourists",
-#                            "question" : "What is the best tool for mobile developers?"}))
+rewriter_chain = (REWRITER_PROMT | llm | StrOutputParser())
 
-
-# print("Question 2:")
-# print(grader_chain.invoke({"document" : "Bangkok is the capital of Thailand. It is largest city. Bangkok is a wonderful place for tourists",
-#                            "question" : "Where to look for a job as ML Engineer?"}))
-
-
-# print("Question 3:")
-# print(grader_chain.invoke({"document" : "Bangkok is the capital of Thailand. It is largest city. Bangkok is a wonderful place for tourists",
-#                            "question" : "What would you advise for a vacation?"}))
 
 
 ##DEFINING ACTIONS FOR NODES IN GRAPH
@@ -143,6 +132,7 @@ def grade_documents(state : GraphState):
 
         score_result = grader_chain.invoke({"question" : state["question"],
                                             "document" : doc.page_content})
+        print("Document is relevant: ", score_result["score"])
         scores.append(score_result)
         if score_result["score"] == "yes":
             filtered_docs.append(doc)
@@ -158,22 +148,67 @@ def grade_documents(state : GraphState):
 
 
 
+def decide_to_generate(state : GraphState):
+    """Router that decides whether generate or not"""
+    
+    if state["web_search"] == "Yes":
+        print("DECISION: Do web search")
+        return "transform_query"
+    
+    elif state["web_search"] == "No":
+        print("DECISION: Generate")
+        return "generate"
     
 
 
-def decide_to_generate(state : GraphState):
-    pass
+def rewrite_query_for_websearch(state : GraphState):
+    
+    question = state["question"]
 
+    print("---REWRITE QUESTION-----")
+    optimized_question  = rewriter_chain.invoke({"question" : question})
 
+    return {"documents" : state["documents"],
+            "question" : optimized_question}    
 
-def trasform_query_for_websearch(state : GraphState):
-    pass
 
 def search_on_web(state : GraphState):
     pass
 
+##TODO implement graph
 
 
 
+##TEST GRADER
+# Define the documents
+documents = [
+    "Python is a versatile programming language that is widely used in data science, web development, and automation.",
+    "Bangkok is the capital of Thailand. It is the largest city. Bangkok is a wonderful place for tourists.",
+    "Machine learning engineers are in high demand in the tech industry. They often work with data scientists to build predictive models.",
+    "JavaScript is a popular language for building interactive web applications. It is used by front-end developers.",
+    "The job market for machine learning engineers is growing rapidly, with many opportunities in various industries."
+]
+
+# Define the question
+question = "Where to look for a job as ML Engineer?"
+
+# Wrap the documents in the expected Document class
+documents_wrapped = [Document(page_content=doc) for doc in documents]
+
+# Define the initial state
+initial_state = {
+    "question": question,
+    "documents": documents_wrapped,
+    "generation": "",
+    "web_search": ""
+}
+
+
+# # Run the grader function with the initial state
+# graded_state = grade_documents(initial_state)
+
+# # Print the results
+# print("Graded State:")
+# print(graded_state)
 
 
