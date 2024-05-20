@@ -83,6 +83,9 @@ rag_chain = create_ragchain(retriever=retriever,
 
 grader_chain = (GRADER_PROMT | llm | JsonOutputParser())
 
+rewriter_chain = (REWRITER_PROMT | llm | StrOutputParser())
+
+
 
 ##DEFINING ACTIONS FOR NODES IN GRAPH
 def retrieve(state : GraphState):
@@ -145,15 +148,13 @@ def grade_documents(state : GraphState):
 
 
 
-    
 
 
 def decide_to_generate(state : GraphState):
     pass
 
 
-
-def trasform_query_for_websearch(state : GraphState):
+def rewrite_query_for_websearch(state : GraphState):
     pass
 
 def search_on_web(state : GraphState):
