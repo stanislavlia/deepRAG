@@ -18,6 +18,7 @@ services:
 
     depends_on:
       - chroma
+      - localstack
     
     networks:
       - search_net
@@ -31,10 +32,19 @@ services:
     depends_on:
       - retrieval_app
       - chroma
+      - localstack
     networks:
       - search_net
   
-  
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - PERSISTENCE=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     
 
 networks:
