@@ -9,3 +9,4 @@ __pycache__/*
 retrieval_app/__pycache__/*
 retrieval_app/tmp/*
 retrieval_app_langchain/__pycache__/*
+.ipynb_checkpoints/
