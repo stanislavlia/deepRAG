@@ -7,6 +7,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_community.chat_models.openai import ChatOpenAI
+from langchain_community.retrievers import TavilySearchAPIRetriever
 from langchain.callbacks import get_openai_callback
 from dotenv import load_dotenv
 from typing_extensions import TypedDict
@@ -15,12 +16,15 @@ from typing import List
 import os
 import chromadb
 
-CHROMA_DB_HOST="localhost"
-CHROMA_DB_PORT=8012
-
 load_dotenv()
 
+CHROMA_DB_HOST="localhost"
+CHROMA_DB_PORT=8012
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
+
+
+
 embedding_func = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
 
 llm = ChatOpenAI(model="gpt-3.5-turbo",
@@ -38,6 +42,10 @@ splits = ["Hello everyone! I am Stanislav and I study Computer Science",
 
 vectorstore = Chroma.from_texts(texts=splits, embedding=embedding_func)
 retriever = vectorstore.as_retriever(search_type="mmr")
+
+
+tavily_search_retriever = TavilySearchAPIRetriever(k=4,
+                                                   api_key=TAVILY_API_KEY)
 
 
 class GraphState(TypedDict):
@@ -95,7 +103,7 @@ def retrieve(state : GraphState):
     Args:
         state (dict): The current graph state
 
-    Returns:ß
+    Returns:
         state (dict): New key added to state, documents, that contains retrieved documents
     """
 
@@ -128,6 +136,7 @@ def grade_documents(state : GraphState):
     scores = []
     web_search = "No"
     
+    print("----GRADE DOCS------")
     for doc in documents:
 
         score_result = grader_chain.invoke({"question" : state["question"],
@@ -173,7 +182,30 @@ def rewrite_query_for_websearch(state : GraphState):
 
 
 def search_on_web(state : GraphState):
-    pass
+
+    print("----WEB_SEARCH-----")
+
+    docs = state["documents"]
+    question = state["question"]
+
+
+    websearch_results = tavily_search_retriever.invoke(question)
+
+    print(websearch_results)
+
+    #combine websearch results 
+    websearch_results = "\n".join([doc.page_content for doc in websearch_results])
+    websearch_results = Document(page_content=websearch_results)
+
+    docs.append(websearch_results)
+
+    return {"documents" : docs,
+            "question" : question,}
+
+
+
+
+
 
 ##TODO implement graph
 
@@ -204,11 +236,5 @@ initial_state = {
 }
 
 
-# # Run the grader function with the initial state
-# graded_state = grade_documents(initial_state)
-
-# # Print the results
-# print("Graded State:")
-# print(graded_state)
 
 
