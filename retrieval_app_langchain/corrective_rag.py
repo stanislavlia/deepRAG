@@ -148,19 +148,34 @@ def grade_documents(state : GraphState):
 
 
 
-
-
 def decide_to_generate(state : GraphState):
-    pass
+    """Router that decides whether generate or not"""
+    
+    if state["web_search"] == "Yes":
+        print("DECISION: Do web search")
+        return "transform_query"
+    
+    elif state["web_search"] == "No":
+        print("DECISION: Generate")
+        return "generate"
+    
 
 
 def rewrite_query_for_websearch(state : GraphState):
-    pass
+    
+    question = state["question"]
+
+    print("---REWRITE QUESTION-----")
+    optimized_question  = rewriter_chain.invoke({"question" : question})
+
+    return {"documents" : state["documents"],
+            "question" : optimized_question}    
+
 
 def search_on_web(state : GraphState):
     pass
 
-
+##TODO implement graph
 
 
 
