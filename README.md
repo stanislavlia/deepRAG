@@ -14,7 +14,6 @@ Web UI will be located at ``localhost:8051``
 #### current tasks:
 1) Write unit-tests for backend and put them to CI pipeline
 2) Migrate from Streamlit to classic frontend (**NextJS + HTML**)
-3) Fix ci to work  with .env file properly
 
    
 
