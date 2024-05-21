@@ -9,6 +9,9 @@ from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_community.chat_models.openai import ChatOpenAI
 from langchain_community.retrievers import TavilySearchAPIRetriever
 from langchain.callbacks import get_openai_callback
+from langgraph.graph import END, StateGraph
+
+
 from dotenv import load_dotenv
 from typing_extensions import TypedDict
 from retrieval import create_ragchain
@@ -65,6 +68,18 @@ class GraphState(TypedDict):
     documents: List[str]
 
 ##PROMTS
+RAG_PROMT = PromptTemplate.from_template(
+    """
+        Context:
+            {docs}
+        Question:
+            {question}
+       You are a helpful expert in answering questions related to provided context.
+       If provided documents do not relate to the question, feel free to answer the question yourself.
+      """
+)
+    
+
 GRADER_PROMT =  PromptTemplate(
     template="""You are a grader assessing relevance of a retrieved document to a user question. \n 
     Here is the retrieved document: \n\n {document} \n\n
@@ -85,8 +100,7 @@ REWRITER_PROMT = PromptTemplate(
 )
 
 ##CREATE CHAINS 
-rag_chain = create_ragchain(retriever=retriever,
-                            llm=llm)
+rag_chain = (RAG_PROMT | llm | StrOutputParser())
 
 
 grader_chain = (GRADER_PROMT | llm | JsonOutputParser())
@@ -116,19 +130,21 @@ def retrieve(state : GraphState):
             "question" : question}
 
 
-def generate(state : GraphState):
+def generate(state):
     """generates output based on provided context"""
 
     print("-----GENERATE------")
     generation = rag_chain.invoke({"docs" : state["documents"],
                                    "question" : state["question"]})
 
+    print("Answer: ", generation)
+
     return {"documents" : state["documents"],
             "question" : state["question"],
-            "generation" : state["generation"]}
+            "generation" : generation}
 
 #todo: make loop asyncronous
-def grade_documents(state : GraphState):
+def grade_documents(state):
     
     documents = state["documents"]
 
@@ -145,10 +161,13 @@ def grade_documents(state : GraphState):
         scores.append(score_result)
         if score_result["score"] == "yes":
             filtered_docs.append(doc)
-        else:
-            web_search = "Yes"
+    
+    if len(filtered_docs) <= 2:
+        web_search = "Yes"
+
 
     print("Relevant docs count: ", len(filtered_docs))
+    print(filtered_docs)
 
     return {"documents" : filtered_docs,
             "question" : state["question"],
@@ -157,7 +176,7 @@ def grade_documents(state : GraphState):
 
 
 
-def decide_to_generate(state : GraphState):
+def decide_to_generate(state):
     """Router that decides whether generate or not"""
     
     if state["web_search"] == "Yes":
@@ -170,18 +189,20 @@ def decide_to_generate(state : GraphState):
     
 
 
-def rewrite_query_for_websearch(state : GraphState):
+def rewrite_query_for_websearch(state):
     
     question = state["question"]
 
     print("---REWRITE QUESTION-----")
     optimized_question  = rewriter_chain.invoke({"question" : question})
+    print("Optimized question: ", optimized_question)
 
     return {"documents" : state["documents"],
             "question" : optimized_question}    
 
 
-def search_on_web(state : GraphState):
+#CONSIDER DuckDuckGO search / add Wikipedia as +1 option
+def search_on_web(state):
 
     print("----WEB_SEARCH-----")
 
@@ -190,8 +211,6 @@ def search_on_web(state : GraphState):
 
 
     websearch_results = tavily_search_retriever.invoke(question)
-
-    print(websearch_results)
 
     #combine websearch results 
     websearch_results = "\n".join([doc.page_content for doc in websearch_results])
@@ -203,15 +222,34 @@ def search_on_web(state : GraphState):
             "question" : question,}
 
 
+def build_crag_graph():
+    workflow = StateGraph(GraphState)
+
+    #define nodes
+    workflow.add_node("retrieve", retrieve)
+    workflow.add_node("generate", generate)
+    workflow.add_node("grade", grade_documents)
+    workflow.add_node("transform_query", rewrite_query_for_websearch)
+    workflow.add_node("websearch", search_on_web)
+
+    #set up edges
+    workflow.set_entry_point("retrieve")
+    workflow.add_edge("retrieve", "grade")
+    workflow.add_conditional_edges("grade",
+                                decide_to_generate,
+                                path_map={"transform_query": "transform_query",
+                                            "generate": "generate"})
+
+    workflow.add_edge("transform_query", "websearch")
+    workflow.add_edge("websearch", "generate")
+    workflow.add_edge("generate", END)
+
+    app = workflow.compile()
+
+    return app
 
 
-
-
-##TODO implement graph
-
-
-
-##TEST GRADER
+##TEST 
 # Define the documents
 documents = [
     "Python is a versatile programming language that is widely used in data science, web development, and automation.",
@@ -222,19 +260,28 @@ documents = [
 ]
 
 # Define the question
-question = "Where to look for a job as ML Engineer?"
+question = "What is machine learning? How useful ML might be for business?"
 
 # Wrap the documents in the expected Document class
 documents_wrapped = [Document(page_content=doc) for doc in documents]
-
-# Define the initial state
-initial_state = {
-    "question": question,
-    "documents": documents_wrapped,
-    "generation": "",
-    "web_search": ""
-}
+retriever.add_documents(documents_wrapped)
 
 
+crag_app = build_crag_graph()
 
+from pprint import pprint
+
+# Run
+inputs = {"question": question}
+
+
+# # Final generation
+answer = crag_app.invoke(inputs)
+
+pprint(answer)
+print("----ANSWER----")
+pprint(answer["generation"])
+ 
+##TODO: Think about memory for QA bot
+##TODO: start to develop frontend in NextJS
 
