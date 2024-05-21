@@ -161,8 +161,10 @@ def grade_documents(state):
         scores.append(score_result)
         if score_result["score"] == "yes":
             filtered_docs.append(doc)
-        else:
-            web_search = "Yes"
+    
+    if len(filtered_docs) <= 2:
+        web_search = "Yes"
+
 
     print("Relevant docs count: ", len(filtered_docs))
     print(filtered_docs)
@@ -230,7 +232,7 @@ def build_crag_graph():
     workflow.add_node("transform_query", rewrite_query_for_websearch)
     workflow.add_node("websearch", search_on_web)
 
-    #sey up edges
+    #set up edges
     workflow.set_entry_point("retrieve")
     workflow.add_edge("retrieve", "grade")
     workflow.add_conditional_edges("grade",
@@ -247,7 +249,7 @@ def build_crag_graph():
     return app
 
 
-##TEST GRADER
+##TEST 
 # Define the documents
 documents = [
     "Python is a versatile programming language that is widely used in data science, web development, and automation.",
@@ -267,18 +269,19 @@ retriever.add_documents(documents_wrapped)
 
 crag_app = build_crag_graph()
 
-# from pprint import pprint
+from pprint import pprint
 
-# # Run
-# inputs = {"question": question}
-
-
-# # # Final generation
-# answer = crag_app.invoke(inputs)
-
-# pprint(answer)
-# print("----ANSWER----")
-# pprint(answer["generation"])
+# Run
+inputs = {"question": question}
 
 
+# # Final generation
+answer = crag_app.invoke(inputs)
+
+pprint(answer)
+print("----ANSWER----")
+pprint(answer["generation"])
+ 
+##TODO: Think about memory for QA bot
+##TODO: start to develop frontend in NextJS
 

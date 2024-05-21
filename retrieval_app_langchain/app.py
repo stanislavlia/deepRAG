@@ -184,3 +184,4 @@ def ask_question_sources(question : QuestionSchema):
     except Exception as e:
             logging.error(f"Question {question.question} failed: {e}")
             raise HTTPException(status_code=500, detail=str(e))
+
