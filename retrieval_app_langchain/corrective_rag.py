@@ -66,6 +66,7 @@ class GraphState(TypedDict):
     generation: str
     web_search: str
     documents: List[str]
+    workflow_steps: List
 
 ##PROMTS
 RAG_PROMT = PromptTemplate.from_template(

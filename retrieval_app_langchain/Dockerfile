@@ -12,6 +12,8 @@ RUN python3 preload_model.py
 
 COPY ./app.py /app/app.py
 COPY ./retrieval.py /app/retrieval.py
+COPY ./localstack_s3.py /app/localstack_s3.py
+COPY ./corrective_rag.py /app/corrective_rag.py
 COPY ./.env /app/.env
 
 RUN pip install pypdf
