@@ -17,6 +17,7 @@ import datetime
 import json
 from dotenv import load_dotenv
 import os
+import localstack_s3
 
 load_dotenv()
 
@@ -24,6 +25,8 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 DB_PORT=8000
 DB_HOST="chroma"
 STORAGE_DIR_PATH = "/app/docs"
+STORAGE_ENDPOINT = "https://localstack:4566"
+BUCKET_NAME="test-bucket"
 
 
 # Configure logging
@@ -54,7 +57,16 @@ rag_chain = create_ragchain(vectorstore.as_retriever(),
 
 rag_chain_with_sources = create_ragchain_with_sources(vectorstore.as_retriever(),
                                                       llm=llm)
+
 logging.info("Chains are initialized...")
+
+
+s3_storage_client = localstack_s3.initializeS3Client(end_point=STORAGE_ENDPOINT)
+s3_bucket = localstack_s3.initializeBucket(s3_client=s3_storage_client,
+                                           bucket_name=BUCKET_NAME)
+
+logging.info("Locastack S3 is ready...")
+
 
 
 app = FastAPI()
@@ -106,7 +118,13 @@ def load_pdf_to_vecstore(file: UploadFile = File(...)):
         add_chunks_to_db(langchain_chromadb_vecstore=vectorstore, chunks=chunks)
         
         message = f"{len(chunks)} chunks of {file.filename} were added"
+        localstack_s3.uploadFile(s3_client=s3_storage_client,
+                                 bucket_name=BUCKET_NAME,
+                                 file_path=file_path)
+        
         logging.info(message)
+        logging.info(f"LOCALSTACK S3: File {file_path} is uploaded to bucket {BUCKET_NAME}")
+
         return {"message": message}
     except Exception as e:
         logging.error(f"Failed to process file {file.filename}: {e}")
