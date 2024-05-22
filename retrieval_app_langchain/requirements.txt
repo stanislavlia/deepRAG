@@ -206,3 +206,4 @@ zipp==3.18.1
 sentence-transformers
 langgraph
 tavily-python
+boto3
