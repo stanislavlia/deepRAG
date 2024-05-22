@@ -127,8 +127,21 @@ def retrieve(state : GraphState):
     print("Quetion: ", question)
     documents = retriever.get_relevant_documents(query=question)
 
+    #write history
+    history = []
+
+    history.append({"node_name" : "retrieve",
+                    "question" :  question,
+                    "documents" : documents,
+                    })
+    
+
+
     return {"documents" : documents,
-            "question" : question}
+            "question" : question,
+            "workflow_steps" : history}
+
+
 
 
 def generate(state):
@@ -140,9 +153,16 @@ def generate(state):
 
     print("Answer: ", generation)
 
+
+    #history
+    history = state["workflow_steps"]
+    history.append({"node_name" : "generate",
+                    "answer" : generation})
+
     return {"documents" : state["documents"],
             "question" : state["question"],
-            "generation" : generation}
+            "generation" : generation,
+            "workflow_steps" : history}
 
 #todo: make loop asyncronous
 def grade_documents(state):

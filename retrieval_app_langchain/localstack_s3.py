@@ -2,6 +2,10 @@ import sys
 import os.path
 import boto3
 from botocore.exceptions import ClientError
+import logging 
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 def initializeS3Client(end_point):
     try:
@@ -11,13 +15,13 @@ def initializeS3Client(end_point):
             aws_access_key_id='test',
             aws_secret_access_key='test',
         )
-        sys.stdout.write("S3 client initialized successfully\n")
+        logging.info("S3 client initialized successfully")
         return s3_client
     except ClientError as e:
-        sys.stderr.write(f"S3 client initialization error: {e}\n")
+        logging.error(f"S3 client initialization error: {e}")
         return None
     except Exception as e:
-        sys.stderr.write(f"An unexpected error occurred while S3 client initialization: {e}\n")
+        logging.error(f"An unexpected error occurred while S3 client initialization: {e}")
         return None
 
 def initializeBucket(s3_client, bucket_name):
@@ -26,51 +30,51 @@ def initializeBucket(s3_client, bucket_name):
             Bucket=bucket_name,
             CreateBucketConfiguration={'LocationConstraint': 'ap-southeast-1'}
         )
-        sys.stdout.write(f"Bucket '{bucket_name}' created successfully!\n")
+        logging.info(f"Bucket '{bucket_name}' created successfully!")
     except ClientError as e:
         if e.response['Error']['Code'] == "BucketAlreadyOwnedByYou":
-            sys.stderr.write(f"Bucket '{bucket_name}' is already created!\n")
+            logging.error(f"Bucket '{bucket_name}' is already created!")
         else:
-            sys.stderr.write(f"Bucket error: {e.response['Error']['Code']}\n")
+            logging.error(f"Bucket error: {e.response['Error']['Code']}")
     except Exception as e:
-        sys.stderr.write(f"An unexpected error occurred while bucket '{bucket_name}' creation: {e}\n")
+        logging.error(f"An unexpected error occurred while bucket '{bucket_name}' creation: {e}")
 
 def listBuckets(s3_client):
-    print('Existing buckets:')
+    logging.info('Existing buckets:')
     for bucket in s3_client.list_buckets()['Buckets']:
-        print(f'{bucket["Name"]}')
+        logging.info(f'{bucket["Name"]}')
 
 def listFiles(s3_client, bucket_name):
-    print('Files in the bucket:')
+    logging.info('Files in the bucket:')
     try:
         files = s3_client.list_objects_v2(Bucket=bucket_name).get('Contents', [])
         for file_name in [file['Key'] for file in files]:
-            print(file_name)
+            logging.info(file_name)
     except ClientError as e:
-        sys.stderr.write(f"Failed to list files: {e}\n")
+        logging.error(f"Failed to list files: {e}")
     except Exception as e:
-        sys.stderr.write(f"An unexpected error occurred while listing files: {e}\n")
+        logging.error(f"An unexpected error occurred while listing files: {e}")
 
 def uploadFile(s3_client, bucket_name, file_path):
     try:
         with open(file_path, 'rb') as fileobj:
             s3_client.upload_fileobj(fileobj, bucket_name, os.path.basename(fileobj.name))
-        sys.stdout.write(f"File '{fileobj.name}' uploaded successfully!\n")
+        logging.info(f"File '{fileobj.name}' uploaded successfully!")
     except FileNotFoundError as e:
-        sys.stderr.write(f"File at path '{file_path}' not found\n")
+        logging.error(f"File at path '{file_path}' not found")
     except ClientError as e:
-        sys.stderr.write(f"Failed to upload file '{os.path.basename(fileobj.name)}': {e}\n")
+        logging.error(f"Failed to upload file '{os.path.basename(fileobj.name)}': {e}")
     except Exception as e:
-        sys.stderr.write(f"An unexpected error occurred while uploading '{os.path.basename(fileobj.name)}': {e}\n")
+        logging.error(f"An unexpected error occurred while uploading '{os.path.basename(fileobj.name)}': {e}")
 
 def deleteFile(s3_client, bucket_name, file_name):
     try:
         s3_client.delete_object(Bucket=bucket_name, Key=file_name)
-        sys.stdout.write(f"File '{file_name}' deleted successfully!\n")
+        logging.info(f"File '{file_name}' deleted successfully!")
     except ClientError as e:
-        sys.stderr.write(f"An error occurred while deleting file '{file_name}': {e}\n")
+        logging.error(f"An error occurred while deleting file '{file_name}': {e}")
     except Exception as e:
-        sys.stderr.write(f"An unexpected error occurred while deleting file '{file_name}': {e}\n")
+        logging.error(f"An unexpected error occurred while deleting file '{file_name}': {e}")
 
 def getDownloadURL(s3_client, bucket_name, file_name):
     try:
@@ -79,13 +83,13 @@ def getDownloadURL(s3_client, bucket_name, file_name):
             Params={'Bucket': bucket_name, 'Key': file_name},
             ExpiresIn=3600  # URL expires in 1 hour
         )
-        sys.stdout.write(f"Generation of a presigned URL to download a file {file_name} is successful\n")
+        logging.info(f"Generation of a presigned URL to download a file {file_name} is successful")
         return presigned_url
     except ClientError as e:
-        sys.stderr.write(f"An error occurred while generating the download link for {file_name}: {e}\n")
+        logging.error(f"An error occurred while generating the download link for {file_name}: {e}")
         return None
     except Exception as e:
-        sys.stderr.write(f"An unexpected error occurred while generating the download link for {file_name}: {e}\n")
+        logging.error(f"An unexpected error occurred while generating the download link for {file_name}: {e}")
         return None
 
 # def main():
@@ -116,5 +120,5 @@ def getDownloadURL(s3_client, bucket_name, file_name):
 #             # print(getDownloadURL(s3_client, bucket_name, file_name))
 
 #         except Exception as e:
-#             sys.stderr.write(f"Error in main: {e}\n")
+#             logging.error(f"Error in main: {e}")
 # main()
